@@ -1,0 +1,68 @@
+<!--
+
+Haproxy logs decoder
+Author: Bayu Sangkaya
+
+-->
+
+<decoder name="haproxy-docker">
+  <parent>json</parent>
+  <use_own_name>true</use_own_name>
+  <prematch offset="after_parent">^log":"(\d+.\d+.\d+.\d+):(\d+) [(\S+)] (\S+) (\S+)/(\S+) (\d+/\d+/\d+/\d+/\d+) (\S+) (\S+)</prematch>
+  <regex offset="after_parent">^log":"(\d+.\d+.\d+.\d+):(\d+) [(\S+)] (\S+) (\S+)/(\S+) (\d+/\d+/\d+/\d+/\d+) (\S+) (\S+) - - (\S+) (\d+/\d+/\d+/\d+/\d+) (\d+)/(\d+) {(\.*)} \\"(\w+ \S+)</regex>
+  <order>srcip, srcport, accept_date, frontend_name, backend_name, server_name, timer, id, response_lenght, termination_state, connections, server_queue, backend_queue, headers, url</order>
+</decoder>
+
+
+<decoder name="haproxy">
+     <program_name>haproxy</program_name>
+     <prematch>\d+.\d+.\d+.\d+:\d+ \S+ \S+</prematch>
+</decoder>
+
+<decoder name="haproxy1">
+    <parent>haproxy</parent>
+    <regex>(\d+.\d+.\d+.\d+):(\d+) [(\S+)] (\S+) (\S+)/(\S+) (\d+/\d+/\d+/\d+/\d+) (\S+) (\S+)</regex>
+    <order>srcip, srcport, accept_date, frontend_name, backend_name, server_name, timer, id, response_lenght</order>
+</decoder>
+
+<decoder name="haproxy1">
+    <parent>haproxy</parent>
+    <regex>- - (\S+) (\d+/\d+/\d+/\d+/\d+) (\d+)/(\d+)</regex>
+    <order>termination_state, connections, server_queue, backend_queue</order>
+</decoder>
+
+<decoder name="haproxy1">
+    <parent>haproxy</parent>
+    <type>web-log</type>
+    <regex>{(\.*)} "(\.*)</regex>
+    <order>headers, url</order>
+</decoder>
+
+<decoder name="haproxy">
+     <prematch>\d+.\d+.\d+.\d+:\d+ \S+ \S+</prematch>
+</decoder>
+
+<decoder name="haproxy2">
+    <parent>haproxy</parent>
+    <regex>(\d+.\d+.\d+.\d+):(\d+) [(\S+)] (\S+) (\S+)/(\S+) (\d+/\d+/\d+/\d+/\d+) (\S+) (\S+)</regex>
+    <order>srcip, srcport, accept_date, frontend_name, backend_name, server_name, timer, id, response_lenght</order>
+</decoder>
+
+<decoder name="haproxy2">
+    <parent>haproxy</parent>
+    <regex>- - (\S+) (\d+/\d+/\d+/\d+/\d+) (\d+)/(\d+)</regex>
+    <order>termination_state, connections, server_queue, backend_queue</order>
+</decoder>
+
+<decoder name="haproxy2">
+    <parent>haproxy</parent>
+    <regex>{(\.*)} "(\.*)</regex>
+    <order>headers, url</order>
+</decoder>
+
+<decoder name="haproxy-tcp">
+     <parent>haproxy</parent>
+     <prematch>(\d+.\d+.\d+.\d+):(\d+) [(\S+)] (\S+)</prematch>
+     <regex>(\d+.\d+.\d+.\d+):(\d+) [(\S+)] (\S+) (\S+) (\d+/\d+/\d+) (\d+) -- (\d+/\d+/\d+/\d+/\d+) (\d+)/(\d+)</regex>
+     <order>srcip, srcport, accept_date, frontend_name, backend_name, server_name, timer, response_lenght, connections, server_queue, backend_queue</order>
+</decoder>
