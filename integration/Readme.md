@@ -1,10 +1,10 @@
-Copy these file to `/var/ossec/integration`
-Fix permission
+* Copy these file to `/var/ossec/integration`
+* Fix permission
 ```
 chown root:wazuh /var/ossec/integrations/custom-misp*
 chmod 750 /var/ossec/integrations/custom-misp*
 ```
-Add this block to `/var/ossec/etc/ossec.conf`
+* Add this block to `/var/ossec/etc/ossec.conf`
 ```
 <integration>
 	<name>custom-misp</name>
