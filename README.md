@@ -1,5 +1,5 @@
 # Wazuh Custom Decoders and Rules
-This project contains custom decoders and rules for Wazuh, created by me.
+This project contains custom decoders and rules for Wazuh, created by me. Some rules are based on SOC Fortress rules, and some are my own decoders and rules.
 
 ### How to use
 Simply put these files under /var/ossec/etc/rules and /var/ossec/etc/decoders.
