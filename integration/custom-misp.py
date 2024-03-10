@@ -229,6 +229,40 @@ elif event_source == 'ossec' and (event_type == "syscheck_entry_added" or event_
             alert_output["misp"]["type"] = misp_api_response["response"]["Attribute"][0]["type"]
            # print(alert_output)
             send_event(alert_output, alert["agent"])
+
+#MISP web attack/scan source IP check
+elif event_source == 'web' and event_type == 'web_scan':
+    try:
+        wazuh_event_param = alert["data"]["srcip"]
+    except IndexError:
+        sys.exit()
+    misp_search_value = "value:"f"{wazuh_event_param}"
+    misp_search_url = ''.join([misp_base_url, misp_search_value])
+    try:
+        misp_api_response = requests.get(misp_search_url, headers=misp_apicall_headers, verify=false)
+    except ConnectionError:
+        alert_output["misp"] = {}
+        alert_output["integration"] = "misp"
+        alert_output["misp"]["error"] = 'Connection Error to MISP API'
+        send_event(alert_output, alert["agent"])
+    else:
+        misp_api_response = misp_api_response.json()
+        print("misp web search url : ",misp_search_url)
+        print("misp web response IP : ",misp_api_response)
+    # Check if response includes Attributes (IoCs)
+        if (misp_api_response["response"]["Attribute"]):
+    # Generate Alert Output from MISP Response
+            alert_output["misp"] = {}
+            #alert_output["misp"]["file_path"] = alert["syscheck"]["path"]
+            alert_output["misp"]["event_id"] = misp_api_response["response"]["Attribute"][0]["event_id"]
+            alert_output["misp"]["category"] = misp_api_response["response"]["Attribute"][0]["category"]
+            alert_output["misp"]["value"] = misp_api_response["response"]["Attribute"][0]["value"]
+            alert_output["misp"]["type"] = misp_api_response["response"]["Attribute"][0]["type"]
+           # print(alert_output)
+            send_event(alert_output, alert["agent"])
+            with open('/var/ossec/etc/lists/misp_ip_lists.txt', 'a') as file:
+                file.write(wazuh_event_param + '\n')
+                print(f"misp : Added srcip {wazuh_event_param} to misp_ip_lists.txt")
 else:
     sys.exit()
 
