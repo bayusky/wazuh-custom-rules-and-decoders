@@ -1,6 +1,10 @@
 ## Important
 ### Quarantine.sh
 * `quarantine.sh` only works with `custom-misp.py` and MISP rules within this repository. This script quarantine file with IoC, found on MISP DB.
+* Make quarantine directory on agent side
+  ```
+  mkdir /tm/quarantined
+  ```
 * Insert these blocks on `/var/ossec/etc/ossec.conf` on server side to invoke active-response command
   ```
     <command>
