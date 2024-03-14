@@ -260,6 +260,7 @@ elif event_source == 'web' and event_type == 'web_scan':
             alert_output["misp"]["type"] = misp_api_response["response"]["Attribute"][0]["type"]
            # print(alert_output)
             send_event(alert_output, alert["agent"])
+	   # write MISP IP list to a file for future blocklist
             with open('/var/ossec/etc/lists/misp_ip_lists.txt', 'a') as file:
                 file.write(wazuh_event_param + '\n')
                 print(f"misp : Added srcip {wazuh_event_param} to misp_ip_lists.txt")
