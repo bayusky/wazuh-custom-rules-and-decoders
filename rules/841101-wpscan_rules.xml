@@ -1,4 +1,4 @@
-  <rule id="841101" level="7" overwrite="yes">
+  <rule id="841101" level="7">
     <if_sid>800001,800002,31100</if_sid>
     <id>^4</id>
     <url>wp-includes|wp-login|wp-admin|wp-|wordpress|xmlrpc.php</url>
