@@ -14,3 +14,20 @@ chmod 750 /var/ossec/integrations/custom-misp*
 	<alert_format>json</alert_format>
 </integration>
 ```
+### Custom-telegram
+* Copy `custom-telegram*` file to `/var/ossec/integration`
+* Fix permission
+```
+chown root:wazuh /var/ossec/integrations/custom-telegram*
+chmod 750 /var/ossec/integrations/custom-telegram*
+```
+* Add this block to `/var/ossec/etc/ossec.conf`
+```
+  <!-- Telegram Integration -->
+    <integration>
+        <name>custom-telegram</name>
+        <rule_id>31105</rule_id>
+        <hook_url>https://api.telegram.org/bot<your_code>:<your_api_key>/sendMessage</hook_url>
+        <alert_format>json</alert_format>
+    </integration>
+```
