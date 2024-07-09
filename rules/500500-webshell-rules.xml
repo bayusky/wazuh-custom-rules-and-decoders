@@ -1,0 +1,118 @@
+
+<group name="audit,">
+  <!-- System call rules -->
+  <rule id="80792" level="0" overwrite="yes">
+    <if_sid>80700</if_sid>
+    <match field="audit.egid">^119|^123</match>
+    <list field="audit.key" lookup="match_key_value" check_value="command">etc/lists/audit-keys</list>
+    <description>Audit: Command: $(audit.exe).</description>
+    <group>audit_command,gdpr_IV_30.1.g,</group>
+  </rule>
+</group>
+
+
+<group name="linux, webshell, windows,">
+  <!-- This rule detects file creation. -->
+  <rule id="500500" level="12">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i).php$|.phtml$|.php3$|.php4$|.php5$|.phps$|.phar$|.asp$|.aspx$|.jsp$|.cshtml$|.vbhtml$</field>
+    <description>[File creation]: Possible web shell scripting file ($(file)) created</description>
+    <mitre>
+      <id>T1105</id>
+      <id>T1505</id>
+    </mitre>
+  </rule>
+  
+  <!-- This rule detects file modification. -->
+  <rule id="500501" level="12">
+    <if_sid>550</if_sid>
+    <field name="file" type="pcre2">(?i).php$|.phtml$|.php3$|.php4$|.php5$|.phps$|.phar$|.asp$|.aspx$|.jsp$|.cshtml$|.vbhtml$</field>
+    <match negate="yes">/var/www/html/wordspress/shell-resmi.php</match>
+    <description>[File modification]: Possible web shell content added in $(file)</description>
+    <mitre>
+      <id>T1105</id>
+      <id>T1505</id>
+    </mitre>
+  </rule>
+
+  <!-- This rule detects files modified with PHP web shell signatures. -->
+  <rule id="500502" level="15">
+    <if_sid>500501</if_sid>
+    <field name="changed_content" type="pcre2">(?i)passthru|exec|eval|shell_exec|assert|str_rot13|system|phpinfo|base64_decode|chmod|mkdir|fopen|fclose|readfile|show_source|proc_open|pcntl_exec|execute|WScript.Shell|WScript.Network|FileSystemObject|Adodb.stream</field>
+    <description>[File Modification]: File $(file) contains a web shell</description>
+    <mitre>
+      <id>T1105</id>
+      <id>T1505.003</id>
+    </mitre>
+  </rule>
+</group>
+
+
+<!-- Linux Rules. -->
+<group name="auditd, linux, webshell,">
+  <!-- This rule detects web shell command execution. -->
+  <rule id="500520" level="12">
+    <if_sid>80700</if_sid>
+    <field name="audit.key">webshell_command_exec</field>
+    <description>[Command execution ($(audit.exe))]: Possible web shell attack detected</description>
+    <mitre>
+      <id>T1505.003</id>
+      <id>T1059.004</id>
+    </mitre>
+  </rule>
+
+  <!-- This rule detects web shell network connections. -->
+  <rule id="500521" level="12">
+    <if_sid>80700</if_sid>
+    <field name="audit.key">webshell_net_connect</field>
+    <description>[Network connection via $(audit.exe)]: Possible web shell attack detected</description>
+    <mitre>
+      <id>TA0011</id>
+      <id>T1049</id>
+      <id>T1505.003</id>
+    </mitre>
+  </rule>
+</group>
+
+<!-- Windows Rules. -->
+<group name="sysmon, webshell, windows,">
+  <!-- This rule detects web shell command execution. -->
+  <rule id="500530" level="12">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.parentImage" type="pcre2">(?i)w3wp\.exe</field>
+    <field name="win.eventdata.parentUser" type="pcre2">(?i)IIS\sAPPPOOL\\\\DefaultAppPool</field>
+    <description>[Command execution ($(win.eventdata.commandLine))]: Possible web shell attack detected</description>
+    <mitre>
+      <id>T1505.003</id>
+      <id>T1059.004</id>
+    </mitre>
+  </rule>
+
+  <!-- This rule detects web shell network connections. -->
+  <rule id="500531" level="12">
+    <if_sid>61605</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)w3wp\.exe</field>
+    <field name="win.eventdata.user" type="pcre2">(?i)IIS\sAPPPOOL\\\\DefaultAppPool</field>
+    <description>[Network connection]: Possible web shell attempting network connection on source port: $(win.eventdata.sourcePort) and destination port: $(win.eventdata.destinationPort)</description>
+    <mitre>
+      <id>TA0011</id>
+      <id>T1049</id>
+      <id>T1505.003</id>
+    </mitre>
+  </rule>
+</group>
+
+<!--Rules for AR logs-->
+<group name="webshell">
+  <rule id="500092" level="10">
+    <if_sid>650</if_sid>
+    <match>Successfully quarantine webshell</match>
+    <description>Quarantine webshell located at $(file_path)</description>
+  </rule>
+
+  <rule id="100093" level="12">
+    <if_sid>650</if_sid>
+    <match>Error quarantine webshell</match>
+    <description>Error removing webshell located at $(file_path)</description>
+  </rule>
+</group>
