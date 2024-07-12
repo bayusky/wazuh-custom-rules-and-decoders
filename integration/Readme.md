@@ -31,3 +31,19 @@ chmod 750 /var/ossec/integrations/custom-telegram*
         <alert_format>json</alert_format>
     </integration>
 ```
+### Custom-thehive
+* Copy `custom-thehive` and `custom-thehive.py` to `/var/ossec/integration`
+* Fix permission
+  ```
+  chown root:wazuh /var/ossec/etc/integration/custom-thehive*
+  chmod 750 /var/ossec/etc/integration/custom-thehive*
+  ```
+* Add integration block to `/var/ossec/etc/ossec.conf`
+  ```
+  <integration>
+    <name>custom-thehive</name>
+    <hook_url>http://TheHive_Server_IP:9000</hook_url>
+    <api_key>API-KEY</api_key>
+    <alert_format>json</alert_format>
+  </integration>
+  ```
