@@ -40,6 +40,7 @@ chmod 750 /var/ossec/integrations/custom-telegram*
   ```
 * Add integration block to `/var/ossec/etc/ossec.conf`
   ```
+  <!-- TheHive Integration -->
   <integration>
     <name>custom-thehive</name>
     <hook_url>http://TheHive_Server_IP:9000</hook_url>
