@@ -1,0 +1,7 @@
+<!-- Decoder for web shell network connection. -->
+<decoder name="network-traffic-child">
+  <parent>ossec</parent>
+  <prematch offset="after_parent">^output: 'webshell connections':</prematch>
+  <regex offset="after_prematch" type="pcre2">(\d+.\d+.\d+.\d+):(\d+)\|(\d+.\d+.\d+.\d+):(\d+)</regex>
+  <order>local_ip, local_port, foreign_ip, foreign_port</order>
+</decoder>
