@@ -1,27 +1,21 @@
 #!/bin/bash
 
-LOCAL=`dirname $0`;
-cd $LOCAL
-cd ../
-
-PWD=`pwd`
 
 read INPUT_JSON
 FILENAME=$(echo $INPUT_JSON | jq -r .parameters.alert.data.misp.file_path)
-COMMAND=$(echo $INPUT_JSON | jq -r .command)
-LOG_FILE="${PWD}/../logs/active-responses.log"
+LOG_FILE="logs/active-responses.log"
 QUARANTINE_PATH="/tmp/quarantined"
+TIMESTAMP=$(date '+%Y%m%d%H%M%S')
 
-# Quarantine file
-/usr/bin/mv -f $FILENAME ${QUARANTINE_PATH}
-FILEBASE=$(/usr/bin/basename $FILENAME)
-/usr/bin/chattr -R +i ${QUARANTINE_PATH}/${FILEBASE}
+mkdir -p ${QUARANTINE_PATH}
+
+cp -f $FILENAME ${QUARANTINE_PATH}/${FILEBASE}_${TIMESTAMP}
+chattr -R +i ${QUARANTINE_PATH}/${FILEBASE}_${TIMESTAMP}
 
 rm -f $FILENAME
 if [ $? -eq 0 ]; then
- echo "`date '+%Y/%m/%d %H:%M:%S'` $0: $FILENAME moved to ${QUARANTINE_PATH}. Successfully quarantine threat" >> ${LOG_FILE}
+ echo "`date '+%Y/%m/%d %H:%M:%S'` $0: $FILENAME moved to ${QUARANTINE_PATH}. Successfully quarantine malware" >> ${LOG_FILE}
 else
- echo "`date '+%Y/%m/%d %H:%M:%S'` $0: $FILENAME Error quarantine threat" >> ${LOG_FILE}
+ echo "`date '+%Y/%m/%d %H:%M:%S'` $0: Error quarantine malware on $FILENAME" >> ${LOG_FILE}
 fi
-
 exit 0;
