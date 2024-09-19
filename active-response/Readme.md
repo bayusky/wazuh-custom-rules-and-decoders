@@ -1,6 +1,6 @@
 ## Important
-### Quarantine.sh
-* `quarantine.sh` only works with `custom-misp.py` and MISP rules within this repository. This script quarantine file with IoC, found on MISP DB.
+### quarantine-malware.sh and quarantine-webshell.sh
+* `quarantine-malware.sh` only works with `custom-misp.py` and MISP rules within this repository. This script quarantine file with IoC, found on MISP DB.
 * Make quarantine directory on agent side
   ```
   mkdir /tmp/quarantined
@@ -18,6 +18,20 @@
       <command>quarantine-malware</command>
       <location>local</location>
       <rules_id>100623</rules_id>
+    </active-response>
+
+    <!-- For webshell -->
+    <command>
+      <name>quarantine-webshell</name>
+      <executable>quarantine-webshell.sh</executable>
+      <timeout_allowed>no</timeout_allowed>
+    </command>
+
+    <active-response>
+      <disabled>no</disabled>
+      <command>quarantine-webshell</command>
+      <location>local</location>
+      <rules_id>500500,500501</rules_id>
     </active-response>
   ```
 * Create decoder for new active response log in `/var/ossec/etc/decoders/local_decoder.xml`
@@ -40,6 +54,25 @@
       <group>active_response,misp</group>
     </rule>
   </group>
+
+  <!-- For Webshell -->
+  <!--Rules for AR logs-->
+  <group name="ossec">
+    <rule id="500092" level="10">
+      <if_sid>650</if_sid>
+      <match>Successfully quarantine webshell</match>
+      <description>Quarantine webshell located at $(file_path)</description>
+      <group>active_response,webshell</group>
+    </rule>
+
+    <rule id="100093" level="12">
+      <if_sid>650</if_sid>
+      <match>Failed quarantine webshell</match>
+      <description>Error removing webshell located at $(file_path)</description>
+      <group>active_response,webshell</group>
+    </rule>
+  </group>
+  
 
   ```
 * Restart wazuh-manager
