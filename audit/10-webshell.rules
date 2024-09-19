@@ -1,0 +1,9 @@
+## Auditd rules that detect command execution from user www-data.
+-a always,exit -F arch=b32 -S execve -F uid=33 -F key=webshell_command_exec
+-a always,exit -F arch=b64 -S execve -F uid=33 -F key=webshell_command_exec
+
+## Auditd rules that detect network connections from user www-data.
+-a always,exit -F arch=b64 -S socket -F a0=10 -F euid=33 -k webshell_net_connect
+-a always,exit -F arch=b64 -S socket -F a0=2 -F euid=33 -k webshell_net_connect
+-a always,exit -F arch=b32 -S socket -F a0=10 -F euid=33 -k webshell_net_connect
+-a always,exit -F arch=b32 -S socket -F a0=2 -F euid=33 -k webshell_net_connect
