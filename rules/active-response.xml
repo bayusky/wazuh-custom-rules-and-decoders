@@ -1,0 +1,14 @@
+<!--Rules for AR logs-->
+<group name="webshell">
+  <rule id="500092" level="10">
+    <if_sid>650</if_sid>
+    <match>Successfully quarantine webshell</match>
+    <description>Quarantine webshell located at $(file_path)</description>
+  </rule>
+
+  <rule id="100093" level="12">
+    <if_sid>650</if_sid>
+    <match>Failed quarantine webshell</match>
+    <description>Error removing webshell located at $(file_path)</description>
+  </rule>
+</group>
