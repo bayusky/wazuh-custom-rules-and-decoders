@@ -24,7 +24,7 @@
     <if_sid>100620</if_sid>
     <field name="misp.category">\.+</field>
     <field name="misp.file_path">\.+</field>
-    <match negate="yes">d41d8cd98f00b204e9800998ecf8427e</match>
+    <!-- <match negate="yes">d41d8cd98f00b204e9800998ecf8427e</match> -->
     <description>MISP - IoC found in Threat Intel - Category: $(misp.category), Attribute: $(misp.value)</description>
     <options>no_full_log</options>
     <group>misp,misp_alert,</group>
