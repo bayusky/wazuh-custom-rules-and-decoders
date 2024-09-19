@@ -1,16 +1,3 @@
-
-<group name="audit,">
-  <!-- System call rules -->
-  <rule id="80792" level="0" overwrite="yes">
-    <if_sid>80700</if_sid>
-    <match field="audit.egid">^119|^123</match>
-    <list field="audit.key" lookup="match_key_value" check_value="command">etc/lists/audit-keys</list>
-    <description>Audit: Command: $(audit.exe).</description>
-    <group>audit_command,gdpr_IV_30.1.g,</group>
-  </rule>
-</group>
-
-
 <group name="linux, webshell, windows,">
   <!-- This rule detects file creation. -->
   <rule id="500500" level="12">
@@ -27,7 +14,6 @@
   <rule id="500501" level="12">
     <if_sid>550</if_sid>
     <field name="file" type="pcre2">(?i).php$|.phtml$|.php3$|.php4$|.php5$|.phps$|.phar$|.asp$|.aspx$|.jsp$|.cshtml$|.vbhtml$</field>
-    <match negate="yes">/var/www/html/wordspress/shell-resmi.php</match>
     <description>[File modification]: Possible web shell content added in $(file)</description>
     <mitre>
       <id>T1105</id>
@@ -47,7 +33,7 @@
   </rule>
 </group>
 
-
+<!-- Below detect webshell from AuditD and network daemon -->
 <!-- Linux Rules. -->
 <group name="auditd, linux, webshell,">
   <!-- This rule detects web shell command execution. -->
@@ -100,19 +86,16 @@
       <id>T1505.003</id>
     </mitre>
   </rule>
-</group>
 
-<!--Rules for AR logs-->
-<group name="webshell">
-  <rule id="500092" level="10">
-    <if_sid>650</if_sid>
-    <match>Successfully quarantine webshell</match>
-    <description>Quarantine webshell located at $(file_path)</description>
-  </rule>
-
-  <rule id="100093" level="12">
-    <if_sid>650</if_sid>
-    <match>Error quarantine webshell</match>
-    <description>Error removing webshell located at $(file_path)</description>
+  <!-- This rule detects network connections from scripts. -->
+  <rule id="500510" level="12">
+    <decoded_as>ossec</decoded_as>
+    <match>ossec: output: 'webshell connections'</match>
+    <description>[Network connection]: Script attempting network connection on source port: $(local_port) and destination port: $(foreign_port)</description>
+    <mitre>
+      <id>TA0011</id>
+      <id>T1049</id>
+      <id>T1505.003</id>
+    </mitre>
   </rule>
 </group>
