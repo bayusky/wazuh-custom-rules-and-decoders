@@ -21,7 +21,10 @@ def create_message(alert_json):
     agent_name = alert_json['agent']['name'] if 'name' in alert_json['agent'] else ''
     agent_id = alert_json['agent']['id'] if 'id' in alert_json['agent'] else ''
     agent_ip = alert_json['agent']['ip'] if 'ip' in alert_json['agent'] else ''
-    src_ip = alert_json['data']['srcip'] if 'srcip' in alert_json['data'] else ''
+    try:
+       src_ip = alert_json['data']['srcip'] if 'srcip' in alert_json['data'] else ''
+    except:
+       src_ip = ''
     
     # Format message with markdown
     msg_content = f'*{title}*\n\n'
