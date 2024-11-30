@@ -1,6 +1,10 @@
 ## Important
 ### quarantine-malware.sh and quarantine-webshell.sh
 * `quarantine-malware.sh` only works with `custom-misp.py` and MISP rules within this repository. This script quarantine file with IoC, found on MISP DB.
+* Install jq package for Debian-based OS so OS can read json file from alerts.
+  ```
+  sudo apt install jq
+  ```
 * Make quarantine directory on agent side
   ```
   mkdir /tmp/quarantined
