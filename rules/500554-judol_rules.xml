@@ -1,0 +1,26 @@
+<!-- This rule groups detects Judol files on web directories. -->
+<group name="syscheck,judol,">
+  <!-- This rule detects file creation on web directories. -->
+  <rule id="500554" level="12">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i)public|www|html</field>
+    <description>[File creation]: New file $(file) on web directory</description>
+    <group>file_added</group>
+	  <mitre>
+      <id>T1105</id>
+      <id>T1505</id>
+    </mitre>
+  </rule>
+  
+  <!-- This rule detects files modified with Judol signatures. -->
+  <rule id="500550" level="15">
+    <if_sid>550</if_sid>
+    <field name="changed_content" type="pcre2">(?i)slot|gacor|maxwin|thailand|sigmaslot|zeus|cuan</field>
+    <description>[File Modification]: File $(file) contains a judol signature</description>
+	  <group>file_modified</group>
+    <mitre>
+      <id>T1105</id>
+      <id>T1505.003</id>
+    </mitre>
+  </rule>
+</group>
