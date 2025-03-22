@@ -17,7 +17,7 @@ chmod 750 /var/ossec/integrations/custom-misp*
 You can change `<group>` into `<rule_id>` or `<level>`
 ### Integration with Telegram
 * Copy `custom-telegram*` file to `/var/ossec/integration`
-* Need your group Chat ID
+* Need your group Chat ID, put into cutom-telegram.py
 * Fix permission
 ```
 chown root:wazuh /var/ossec/integrations/custom-telegram*
