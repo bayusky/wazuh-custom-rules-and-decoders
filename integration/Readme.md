@@ -1,5 +1,5 @@
 ## Important
-### Custom-misp
+### Integration with MISP
 * Copy `custom-misp*` file to `/var/ossec/integration`
 * Fix permission
 ```
@@ -14,8 +14,10 @@ chmod 750 /var/ossec/integrations/custom-misp*
 	<alert_format>json</alert_format>
 </integration>
 ```
-### Custom-telegram
+You can change `<group>` into `<rule_id>` or `<level>`
+### Integration with Telegram
 * Copy `custom-telegram*` file to `/var/ossec/integration`
+* Need your group Chat ID
 * Fix permission
 ```
 chown root:wazuh /var/ossec/integrations/custom-telegram*
@@ -31,7 +33,9 @@ chmod 750 /var/ossec/integrations/custom-telegram*
         <alert_format>json</alert_format>
     </integration>
 ```
-### Custom-thehive
+* You need to get API key to your Telegram bot
+* You can change `<rule_id>` into `<group>` or `<level>`
+### Integration with The Hive
 * Copy `custom-thehive` and `custom-thehive.py` to `/var/ossec/integration`
 * Fix permission
   ```
