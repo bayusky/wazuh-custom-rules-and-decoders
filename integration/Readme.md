@@ -14,7 +14,7 @@ chmod 750 /var/ossec/integrations/custom-misp*
 	<alert_format>json</alert_format>
 </integration>
 ```
-You can change `<group>` into `<rule_id>` or `<level>`
+* You can change `<group>` into `<rule_id>` or `<level>`
 ### Integration with Telegram
 * Copy `custom-telegram*` file to `/var/ossec/integration`
 * Need your group Chat ID, put into cutom-telegram.py
