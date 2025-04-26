@@ -23,10 +23,10 @@ sudo chmod +x /opt/eset/eset_logcollector.py
 ### 2. Create and Enable the Systemd Service
 
 ```bash
-sudo cp eset_daemon.service /etc/systemd/system/eset-daemon.service
+sudo cp eset_daemon.service /etc/systemd/system/eset_daemon.service
 sudo systemctl daemon-reload
-sudo systemctl enable eset-daemon.service
-sudo systemctl start eset-daemon.service
+sudo systemctl enable eset_daemon.service
+sudo systemctl start eset_daemon.service
 ```
 
 This will run `eset_logcollector.py` as a background service.
