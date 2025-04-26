@@ -1,6 +1,6 @@
 # ESET Integration with Wazuh
 
-This guide explains how to integrate ESET logs into Wazuh using a custom Python script and custom rules.
+This guide explains how to integrate ESET logs into Wazuh using a custom Python script and custom rules. This integration are done inside Wazuh Server VM, or you can create separate VM for logcollector with Wazuh Agent installed.
 
 ## Files
 
