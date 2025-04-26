@@ -1,0 +1,16 @@
+[Unit]
+Description=ESET Detection Fetcher Daemon
+After=network.target
+
+[Service]
+Restart=always
+RestartSec=10
+ExecStart=/usr/bin/python3 /opt/eset/eset_logcollector.py
+WorkingDirectory=/opt/eset
+User=root
+Group=root
+StandardOutput=append:/var/log/eset-daemon.out.log
+StandardError=append:/var/log/eset-daemon.err.log
+
+[Install]
+WantedBy=multi-user.target
