@@ -253,8 +253,7 @@ elif event_source == 'web' and event_type == 'web_scan':
         if (misp_api_response["response"]["Attribute"]):
     # Generate Alert Output from MISP Response
             alert_output["misp"] = {}
-	    alert_output["srcip"] = wazuh_event_param
-            #alert_output["misp"]["file_path"] = alert["syscheck"]["path"]
+            alert_output["srcip"] = wazuh_event_param
             alert_output["misp"]["event_id"] = misp_api_response["response"]["Attribute"][0]["event_id"]
             alert_output["misp"]["category"] = misp_api_response["response"]["Attribute"][0]["category"]
             alert_output["misp"]["value"] = misp_api_response["response"]["Attribute"][0]["value"]
