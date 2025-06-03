@@ -257,7 +257,7 @@ elif event_source == 'ossec' and (event_type == "syscheck_entry_added" or event_
             send_event(alert_output, alert["agent"])
 
 #MISP web attack/scan source IP check
-elif event_source == 'web' and event_type == 'web_scan':
+elif event_source == 'web' and (event_type == 'web_scan' or event_type == 'attack'):
     try:
         wazuh_event_param = alert["data"]["srcip"]
     except IndexError:
