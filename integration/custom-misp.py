@@ -116,6 +116,7 @@ if event_source == 'windows':
         if (misp_api_response["response"]["Attribute"]):
     # Generate Alert Output from MISP Response
             alert_output["misp"] = {}
+            alert_output["integration"] = "misp"
             alert_output["misp"]["source"] = {}
             alert_output["misp"]["event_id"] = misp_api_response["response"]["Attribute"][0]["event_id"]
             alert_output["misp"]["category"] = misp_api_response["response"]["Attribute"][0]["category"]
@@ -166,6 +167,7 @@ elif event_source == 'linux':
         if (misp_api_response["response"]["Attribute"]):
             # Generate Alert Output from MISP Response
             alert_output["misp"] = {}
+            alert_output["integration"] = "misp"
             alert_output["misp"]["event_id"] = misp_api_response["response"]["Attribute"][0]["event_id"]
             alert_output["misp"]["category"] = misp_api_response["response"]["Attribute"][0]["category"]
             alert_output["misp"]["value"] = misp_api_response["response"]["Attribute"][0]["value"]
@@ -195,6 +197,7 @@ elif event_source == 'syscheck' and (decoder_name == "syscheck_new_entry" or dec
         if (misp_api_response["response"]["Attribute"]):
     # Generate Alert Output from MISP Response
             alert_output["misp"] = {}
+            alert_output["integration"] = "misp"
             alert_output["misp"]["file_path"] = alert["syscheck"]["path"]
             alert_output["misp"]["event_id"] = misp_api_response["response"]["Attribute"][0]["event_id"]
             alert_output["misp"]["category"] = misp_api_response["response"]["Attribute"][0]["category"]
@@ -221,6 +224,7 @@ elif event_source == 'syscheck' and (decoder_name == "syscheck_new_entry" or dec
                 if (misp_api_response["response"]["Attribute"]):
                     # Generate Alert Output from MISP Response
                     alert_output["misp"] = {}
+                    alert_output["integration"] = "misp"
                     alert_output["misp"]["file_path"] = alert["syscheck"]["path"]
                     alert_output["misp"]["event_id"] = misp_api_response["response"]["Attribute"][0]["event_id"]
                     alert_output["misp"]["category"] = misp_api_response["response"]["Attribute"][0]["category"]
@@ -249,6 +253,7 @@ elif event_source == 'ossec' and (event_type == "syscheck_entry_added" or event_
         if (misp_api_response["response"]["Attribute"]):
     # Generate Alert Output from MISP Response
             alert_output["misp"] = {}
+            alert_output["integration"] = "misp"
             alert_output["misp"]["file_path"] = alert["syscheck"]["path"]
             alert_output["misp"]["event_id"] = misp_api_response["response"]["Attribute"][0]["event_id"]
             alert_output["misp"]["category"] = misp_api_response["response"]["Attribute"][0]["category"]
@@ -280,6 +285,7 @@ elif event_source == 'web' and (event_type == 'web_scan' or event_type == 'attac
         if (misp_api_response["response"]["Attribute"]):
     # Generate Alert Output from MISP Response
             alert_output["misp"] = {}
+            alert_output["integration"] = "misp"
             alert_output["srcip"] = wazuh_event_param
             alert_output["misp"]["event_id"] = misp_api_response["response"]["Attribute"][0]["event_id"]
             alert_output["misp"]["category"] = misp_api_response["response"]["Attribute"][0]["category"]
