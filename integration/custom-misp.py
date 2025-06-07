@@ -321,6 +321,7 @@ elif event_source == 'syslog' and event_type == 'authentication_failed':
         if (misp_api_response["response"]["Attribute"]):
     # Generate Alert Output from MISP Response
             alert_output["misp"] = {}
+            alert_output["integration"] = "misp"
             alert_output["srcip"] = wazuh_event_param
             alert_output["misp"]["event_id"] = misp_api_response["response"]["Attribute"][0]["event_id"]
             alert_output["misp"]["category"] = misp_api_response["response"]["Attribute"][0]["category"]
