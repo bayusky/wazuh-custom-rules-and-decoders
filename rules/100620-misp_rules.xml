@@ -1,5 +1,5 @@
 <group name="threat_intel,">
-   <rule id="100620" level="10">
+   <rule id="100620" level="2">
     <field name="integration">misp</field>
     <description>MISPs</description>
     <group>misp,</group>
