@@ -134,8 +134,8 @@ elif event_source == 'syscheck' and (decoder_name == "syscheck_new_entry" or dec
     file_path = alert.get("syscheck", {}).get("path")
     found = False
     if md5_after:
-        if md5_after == "d41d8cd98f00b204e9800998ecf8427e":
-            sys.exit()
+#        if md5_after == "d41d8cd98f00b204e9800998ecf8427e":
+#            sys.exit()
         found = misp_search_and_alert(md5_after, alert_output, alert, file_path=file_path)
     if not found and sha256_after:
         misp_search_and_alert(sha256_after, alert_output, alert, file_path=file_path)
