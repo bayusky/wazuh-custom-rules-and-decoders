@@ -144,8 +144,8 @@ elif event_source == 'ossec' and (event_type == "syscheck_entry_added" or event_
     md5_after = alert.get("syscheck", {}).get("md5_after")
     file_path = alert.get("syscheck", {}).get("path")
     if md5_after:
-        if md5_after == "d41d8cd98f00b204e9800998ecf8427e":
-            sys.exit()
+ #       if md5_after == "d41d8cd98f00b204e9800998ecf8427e":
+ #           sys.exit()
         misp_search_and_alert(md5_after, alert_output, alert, file_path=file_path)
 
 elif event_source == 'web' and (event_type == 'web_scan' or event_type == 'attack'):
