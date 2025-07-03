@@ -1,14 +1,3 @@
-## Quick Install
-
-You can install the Wazuh Agent by running the following command:
-
-```sh
-curl -sSL https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decoders/refs/heads/main/install-agent.sh | sh
-```
-
-**Note:**  
-For security, always review scripts before running them directly from the internet.
-
 # Wazuh Custom Decoders and Rules
 This project contains custom decoders and rules for Wazuh, created by me. Some rules are based on SOC Fortress rules, and some are my own decoders and rules.
 
@@ -16,6 +5,24 @@ This project contains custom decoders and rules for Wazuh, created by me. Some r
 * Put rules and decoder files under `/var/ossec/etc/rules` and `/var/ossec/etc/decoders`. 
 * Put under `/var/ossec/integrations` for integrations script
 * Put under `/var/ossec/active-response/bin/` on agent side for active response script.
+
+### Install wazuh-agent with interactive script
+
+You can install the Wazuh Agent by running the following command:
+
+```sh
+curl -sSL https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decoders/refs/heads/main/install-agent.sh | sh
+```
+
+The script will ask about:
+* Wazuh Agent version
+* Wazuh Manager IP address
+* Wazuh Agent group
+* Authentication key (optional)
+* Install quarantine-malware.sh (optional)
+
+**Note:**  
+For security, always review scripts before running them directly from the internet.
 
 ### Disclaimer 
 Feel free to use it, you can redistribute it and/or modify it under the terms of GPLv2. 
