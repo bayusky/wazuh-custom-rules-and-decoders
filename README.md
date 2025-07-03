@@ -17,7 +17,7 @@ curl -sSL https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decod
 The script will ask about:
 * Wazuh Agent version
 * Wazuh Manager IP address
-* Wazuh Agent group
+* Wazuh Agent group (empty for 'default')
 * Authentication key (optional)
 * Install quarantine-malware.sh (optional)
 

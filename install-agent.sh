@@ -3,7 +3,10 @@
 # Prompt for required values
 read -p "Enter Wazuh Agent version (e.g., 4.12.0-1): " AGENT_VERSION
 read -p "Enter Wazuh Manager IP address: " MANAGER_IP
-read -p "Enter Wazuh Agent group (e.g., server, default): " AGENT_GROUP
+read -p "Enter Wazuh Agent group (e.g., server, default) [default]: " AGENT_GROUP
+if [[ -z "$AGENT_GROUP" ]]; then
+    AGENT_GROUP="default"
+fi
 
 # Detect architecture
 ARCH=$(uname -m)
