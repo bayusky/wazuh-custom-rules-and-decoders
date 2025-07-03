@@ -10,12 +10,15 @@ fi
 
 # Detect architecture
 ARCH=$(uname -m)
+echo "[DEBUG] Detected architecture: $ARCH"
 if [[ "$ARCH" == "x86_64" ]]; then
     ARCH_TYPE="amd64"
     RPM_ARCH="x86_64"
+    echo "[DEBUG] ARCH_TYPE set to: $ARCH_TYPE"
 elif [[ "$ARCH" == "aarch64" ]]; then
     ARCH_TYPE="arm64"
     RPM_ARCH="aarch64"
+    echo "[DEBUG] ARCH_TYPE set to: $ARCH_TYPE"
 else
     echo "[!] Unsupported architecture: $ARCH"
     exit 1
