@@ -11,7 +11,7 @@ This project contains custom decoders and rules for Wazuh, created by me. Some r
 You can install the Wazuh Agent by running the following command:
 
 ```sh
-curl -sSL https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decoders/refs/heads/main/install-agent.sh | sh
+curl -sSL https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decoders/main/install-agent.sh -o install-agent.sh && bash install-agent.sh
 ```
 
 The script will ask about:
