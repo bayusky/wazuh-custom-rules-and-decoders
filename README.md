@@ -1,3 +1,14 @@
+## Quick Install
+
+You can install the Wazuh Agent by running the following command:
+
+```sh
+curl -sSL https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decoders/refs/heads/main/install-agent.sh | sh
+```
+
+**Note:**  
+For security, always review scripts before running them directly from the internet.
+
 # Wazuh Custom Decoders and Rules
 This project contains custom decoders and rules for Wazuh, created by me. Some rules are based on SOC Fortress rules, and some are my own decoders and rules.
 
