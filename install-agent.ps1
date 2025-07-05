@@ -27,7 +27,7 @@ Write-Host "[+] Downloading remove-malware.exe to $activeResponseDir"
 Invoke-WebRequest -Uri $removeMalwareUrl -OutFile $removeMalwareDest
 
 # Optionally configure AUTH_KEY
-y = Read-Host "Do you want to use an AUTH_KEY for authentication? (y/n)"
+$y = Read-Host "Do you want to use an AUTH_KEY for authentication? (y/n)"
 if ($y -eq 'y' -or $y -eq 'Y') {
     $AUTH_KEY = Read-Host -AsSecureString "Enter Wazuh AUTH_KEY"
     $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($AUTH_KEY)
