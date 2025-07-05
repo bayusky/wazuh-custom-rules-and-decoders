@@ -17,7 +17,7 @@ curl -sSL https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decod
 
 For Windows agent
 ```sh
-curl -sSL https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decoders/main/install-agent.ps1 -o install-agent.ps1 && powershell -ExecutionPolicy Bypass -File install-agent.ps1
+Invoke-WebRequest https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decoders/main/install-agent.ps1 -OutFile install-agent.ps1; powershell -ExecutionPolicy Bypass -File .\\install-agent.ps1
 ```
 
 The script will ask about:

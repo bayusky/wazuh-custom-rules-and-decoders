@@ -18,14 +18,16 @@ Invoke-WebRequest -Uri $msiUrl -OutFile $msiPath
 Write-Host "[+] Installing Wazuh agent..."
 Start-Process msiexec.exe -Wait -ArgumentList "/i `"$msiPath`" /qn WAZUH_MANAGER=$MANAGER_IP WAZUH_AGENT_GROUP=$AGENT_GROUP"
 
-# Download remove-malware.exe active response
-$activeResponseDir = "C:\Program Files (x86)\ossec-agent\active-response\bin"
-$removeMalwareUrl = "https://github.com/bayusky/wazuh-custom-rules-and-decoders/raw/main/active-response/remove-malware.exe"
-$removeMalwareDest = Join-Path $activeResponseDir "remove-malware.exe"
-
-Write-Host "[+] Downloading remove-malware.exe to $activeResponseDir"
-Invoke-WebRequest -Uri $removeMalwareUrl -OutFile $removeMalwareDest
-
+# Optionally add remove-malware.exe active response
+$addRemoveMalware = Read-Host "Do you want to add remove-malware.exe active response? (y/n)"
+if ($addRemoveMalware -eq 'y' -or $addRemoveMalware -eq 'Y') {
+    $activeResponseDir = "C:\Program Files (x86)\ossec-agent\active-response\bin"
+    $removeMalwareUrl = "https://github.com/bayusky/wazuh-custom-rules-and-decoders/raw/main/active-response/remove-malware.exe"
+    $removeMalwareDest = Join-Path $activeResponseDir "remove-malware.exe"
+    Write-Host "[+] Downloading remove-malware.exe to $activeResponseDir"
+    Invoke-WebRequest -Uri $removeMalwareUrl -OutFile $removeMalwareDest
+    Write-Host "[+] remove-malware.exe has been added."
+}
 # Optionally configure AUTH_KEY
 $y = Read-Host "Do you want to use an AUTH_KEY for authentication? (y/n)"
 if ($y -eq 'y' -or $y -eq 'Y') {
