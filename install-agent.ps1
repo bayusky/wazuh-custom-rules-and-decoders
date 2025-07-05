@@ -38,5 +38,5 @@ if ($y -eq 'y' -or $y -eq 'Y') {
     Set-Content -Path $authdPassPath -Value $PlainAuthKey
     Write-Host "[+] AUTH_KEY written to $authdPassPath"
 }
-
+Start-Service -Name WazuhSvc
 Write-Host "[+] Wazuh agent installation and configuration complete."
