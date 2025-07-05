@@ -11,18 +11,37 @@
   ```
 * Insert these blocks on `/var/ossec/etc/ossec.conf` on server side to invoke active-response command
   ```
+    <!-- For malware based on MISP-->
+    <!-- For Linux agent -->
     <command>
       <name>quarantine-malware</name>
       <executable>quarantine-malware.sh</executable>
       <timeout_allowed>no</timeout_allowed>
     </command>
+
+    <!-- For Windows agent -->
+    <command>
+      <name>remove-malware</name>
+      <executable>remove-malware.exe</executable>
+      <timeout_allowed>no</timeout_allowed>
+    </command>
   
+    <!-- For Linux agent -->
     <active-response>
       <disabled>no</disabled>
       <command>quarantine-malware</command>
       <location>local</location>
       <rules_id>100623</rules_id>
     </active-response>
+
+    <!-- For Windows agent -->
+    <active-response>
+      <disabled>no</disabled>
+      <command>remove-malware</command>
+      <location>local</location>
+      <rules_id>100623</rules_id>
+    </active-response>
+    
 
     <!-- For webshell -->
     <command>
@@ -49,12 +68,24 @@
   ```
 * Create rules for active response log in `/var/ossec/etc/decoders/local_rules.xml`
   ```
-  <group name="ossec,">
+    <!-- Quarantine Malware rules -->
+    <group name="ossec,">
     <rule id="900651" level="10">
       <if_sid>650</if_sid>
       <field name="file_path">\.+</field>
       <match>Successfully</match>
       <description>Malware $(file_path) quarantined</description>
+      <group>active_response,misp</group>
+    </rule>
+  </group>
+  
+  <!-- Remove Malware rules -->
+  <group name="ossec,">
+    <rule id="900657" level="10">
+      <if_sid>657</if_sid>
+      <field name="parameters.alert.data.misp.file_path">\.+</field>
+      <match>Successfully</match>
+      <description>Malware at $(parameters.alert.data.misp.file_path) removed</description>
       <group>active_response,misp</group>
     </rule>
   </group>
