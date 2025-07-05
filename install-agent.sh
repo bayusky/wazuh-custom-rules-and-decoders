@@ -68,6 +68,9 @@ fi
 read -p "Do you want to install the quarantine-malware.sh active response script? (y/n): " INSTALL_QUARANTINE
 if [[ "$INSTALL_QUARANTINE" =~ ^[Yy]$ ]]; then
     echo "[+] Installing quarantine-malware.sh..."
+    echo "[+] Installing jq..."
+    sudo apt update
+    sudo apt install jq -y
     sudo mkdir -p /var/ossec/active-response/bin
     sudo curl -sSL -o /var/ossec/active-response/bin/quarantine-malware.sh \
         https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decoders/main/active-response/quarantine-malware.sh
