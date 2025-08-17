@@ -1,0 +1,77 @@
+<!-- /var/ossec/etc/rules/openbao_rules.xml -->
+<!-- aktifkan audit open, command  bao audit enable file file_path=/var/log/audit_bao.log-->
+<group name="openbao,">
+
+  <!-- Base OpenBao audit rule -->
+  <rule id="120001" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="type">\.+</field>
+    <description>OpenBao audit event</description>
+    <group>openbao,</group>
+  </rule>
+
+  <!-- Request operations -->
+  <rule id="120002" level="4">
+    <if_sid>120001</if_sid>
+    <field name="type">request</field>
+    <description>OpenBao: Request - $(request.operation) on $(request.path)</description>
+    <group>openbao_request,</group>
+  </rule>
+
+  <!-- Response operations -->
+  <rule id="120003" level="3">
+    <if_sid>120001</if_sid>
+    <field name="type">response</field>
+    <description>OpenBao: Response</description>
+    <group>openbao_response,</group>
+  </rule>
+
+  <!-- System operations (critical) -->
+  <rule id="120010" level="7">
+    <if_sid>120002</if_sid>
+    <field name="request.path">^sys/</field>
+    <description>OpenBao: System configuration change - $(request.operation)</description>
+    <group>openbao_system,</group>
+  </rule>
+
+  <!-- Secret operations -->
+  <rule id="120011" level="5">
+    <if_sid>120002</if_sid>
+    <field name="request.path">^kv/</field>
+    <description>OpenBao: Secret $(request.operation) - $(request.path)</description>
+    <group>openbao_secrets,</group>
+  </rule>
+
+  <!-- Audit operations -->
+  <rule id="120012" level="8">
+    <if_sid>120002</if_sid>
+    <field name="request.path">sys/audit</field>
+    <description>OpenBao: Audit configuration modified</description>
+    <group>openbao_audit,</group>
+  </rule>
+
+  <!-- Write operations (higher level) -->
+  <rule id="120013" level="6">
+    <if_sid>120002</if_sid>
+    <field name="request.operation">update|create</field>
+    <description>OpenBao: Write operation - $(request.path)</description>
+    <group>openbao_write,</group>
+  </rule>
+
+  <!-- Read operations -->
+  <rule id="120014" level="4">
+    <if_sid>120002</if_sid>
+    <field name="request.operation">read</field>
+    <description>OpenBao: Read operation - $(request.path)</description>
+    <group>openbao_read,</group>
+  </rule>
+
+  <!-- Delete operations -->
+  <rule id="120015" level="7">
+    <if_sid>120002</if_sid>
+    <field name="request.operation">delete</field>
+    <description>OpenBao: Delete operation - $(request.path)</description>
+    <group>openbao_delete,</group>
+  </rule>
+
+</group>
