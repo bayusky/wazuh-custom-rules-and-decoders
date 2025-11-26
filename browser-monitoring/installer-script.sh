@@ -154,6 +154,8 @@ elif [ "$OS" = "Darwin" ]; then
         <string>$(which python3)</string>
         <string>$DEST_PATH</string>
     </array>
+    <key>WorkingDirectory</key>
+    <string>$INSTALL_DIR</string>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
