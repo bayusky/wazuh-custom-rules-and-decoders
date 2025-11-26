@@ -40,11 +40,23 @@ Write-Host "[*] Starting Installation..." -ForegroundColor Cyan
 Write-Host "[*] Checking for Python installation..."
 try {
     # Check if python is already in PATH
-    $null = Get-Command python.exe -ErrorAction Stop
-    Write-Host "[+] Python is already installed." -ForegroundColor Green
+    $py = Get-Command python.exe -ErrorAction Stop
+    
+    # CRITICAL: Check if pythonw is also in PATH (Required for background execution)
+    $pyw = Get-Command pythonw.exe -ErrorAction Stop
+
+    # Extra Check: Windows 10/11 includes "Execution Aliases" (stubs) in the WindowsApps folder.
+    # These exist even if Python isn't actually installed (they open the MS Store).
+    # We want to force a real installation if we see these stubs to ensure stability.
+    if ($py.Source -like "*WindowsApps*" -or $pyw.Source -like "*WindowsApps*") {
+        Write-Warning "[-] Detected Microsoft Store Python stub. Proceeding with full standalone installation."
+        throw "Stub detected"
+    }
+
+    Write-Host "[+] Python (and pythonw.exe) is already installed." -ForegroundColor Green
 }
 catch {
-    Write-Warning "[-] Python not found. Initiating automatic installation..."
+    Write-Warning "[-] Python or pythonw.exe not found/usable. Initiating automatic installation..."
     
     try {
         # Download Python
