@@ -17,3 +17,19 @@ Install using this lines
 ```
 curl -s https://raw.githubusercontent.com/bayusky/wazuh-custom-rules-and-decoders/main/browser-monitoring/installer-script.sh | bash
 ```
+Follow logs in MacOS agent
+```
+    <localfile>
+      <location>/Users/*/.browser-monitor/browser_history.log</location>
+      <log_format>syslog</log_format>
+      <out_format>browser-history: $(log)</out_format>
+    </localfile>
+```
+Follow logs in Linux Agent
+```
+    <localfile>
+      <location>/home/*/.browser-monitor/browser_history.log</location>
+      <log_format>syslog</log_format>
+      <out_format>browser-history: $(log)</out_format>
+    </localfile>
+```
