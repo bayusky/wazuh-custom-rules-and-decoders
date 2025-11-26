@@ -5,7 +5,7 @@
     Run this as Administrator.
 
 .DESCRIPTION
-    1. Checks if Python is installed (PATH or Common Dirs); if not, downloads and installs Python 3.12 silently.
+    1. Checks if Python is installed (Common Dirs FIRST, then PATH); if not, downloads and installs Python 3.12 silently.
     2. Creates installation directory C:\BrowserMonitor.
     3. Downloads browser-history-monitor.py from the specific GitHub URL.
     4. Creates a Windows Scheduled Task that runs at logon (HIDDEN).
@@ -38,7 +38,7 @@ if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Adm
 function Test-PythonCommand {
     param($CmdPath)
     try {
-        # Try to get version. If it's a stub, this might fail or return nothing valid.
+        # Try to get version.
         $processInfo = New-Object System.Diagnostics.ProcessStartInfo
         $processInfo.FileName = $CmdPath
         $processInfo.Arguments = "--version"
@@ -50,7 +50,7 @@ function Test-PythonCommand {
         $process = New-Object System.Diagnostics.Process
         $process.StartInfo = $processInfo
         $process.Start() | Out-Null
-        $process.WaitForExit(2000) # Wait max 2 seconds to avoid hanging on GUI stubs
+        $process.WaitForExit(2000)
         
         if ($process.HasExited -and $process.ExitCode -eq 0) {
             return $true
@@ -68,47 +68,65 @@ $PythonExecutable = ""
 $PythonWExecutable = ""
 $IsInstalled = $false
 
-# A. Check PATH
-try {
-    $py = Get-Command python.exe -ErrorAction SilentlyContinue
-    if ($py) {
-        if (Test-PythonCommand $py.Source) {
-            $PythonExecutable = $py.Source
-            $IsInstalled = $true
-            Write-Host "[+] Found valid Python in PATH: $($py.Source)" -ForegroundColor Green
-        }
-    }
-} catch {}
+# A. Check Common Directories FIRST (Priority over PATH aliases)
+Write-Host "[*] Searching common install paths..."
+$CommonPaths = @(
+    "C:\Program Files\Python312\python.exe",
+    "C:\Program Files\Python311\python.exe",
+    "C:\Program Files\Python310\python.exe",
+    "C:\Program Files (x86)\Python312\python.exe",
+    "C:\Program Files (x86)\Python311\python.exe",
+    "C:\Python312\python.exe",
+    "C:\Python311\python.exe",
+    "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe",
+    "$env:LOCALAPPDATA\Programs\Python\Python311\python.exe"
+)
 
-# B. Check Common Directories (if PATH failed or was a bad stub)
-if (-not $IsInstalled) {
-    Write-Host "[*] Searching common install paths..."
-    $CommonPaths = @(
-        "C:\Python312\python.exe",
-        "C:\Python311\python.exe",
-        "C:\Program Files\Python312\python.exe",
-        "C:\Program Files\Python311\python.exe",
-        "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe",
-        "$env:LOCALAPPDATA\Programs\Python\Python311\python.exe"
-    )
-    
-    foreach ($path in $CommonPaths) {
-        if (Test-Path $path) {
-            if (Test-PythonCommand $path) {
-                $PythonExecutable = $path
-                $IsInstalled = $true
-                Write-Host "[+] Found valid Python manually: $path" -ForegroundColor Green
-                
-                # Add to PATH temporarily for this script session
-                $Dir = Split-Path $path -Parent
-                $env:Path = "$Dir;$env:Path"
-                break
-            }
+foreach ($path in $CommonPaths) {
+    if (Test-Path $path) {
+        if (Test-PythonCommand $path) {
+            $PythonExecutable = $path
+            $IsInstalled = $true
+            Write-Host "[+] Found valid Python manually: $path" -ForegroundColor Green
+            
+            # Add to PATH temporarily for this script session so we can use it
+            $Dir = Split-Path $path -Parent
+            $env:Path = "$Dir;$env:Path"
+            break
         }
     }
 }
 
-# C. Install if absolutely missing
+# B. Check PATH (Only if not found in common dirs)
+if (-not $IsInstalled) {
+    try {
+        $py = Get-Command python.exe -ErrorAction SilentlyContinue
+        if ($py) {
+            # Only use PATH if it's NOT the WindowsApps stub, OR if we tested it and it works.
+            if ($py.Source -like "*WindowsApps*") {
+                Write-Warning "[-] Ignoring 'WindowsApps' alias in PATH (preferring real install)."
+            } elseif (Test-PythonCommand $py.Source) {
+                $PythonExecutable = $py.Source
+                $IsInstalled = $true
+                Write-Host "[+] Found valid Python in PATH: $($py.Source)" -ForegroundColor Green
+            }
+        }
+    } catch {}
+}
+
+# C. Last Resort: If absolutely nothing else, try the WindowsApps stub if it responds
+if (-not $IsInstalled) {
+    try {
+        $py = Get-Command python.exe -ErrorAction SilentlyContinue
+        if ($py -and ($py.Source -like "*WindowsApps*") -and (Test-PythonCommand $py.Source)) {
+             $PythonExecutable = $py.Source
+             $IsInstalled = $true
+             Write-Host "[+] Defaulting to WindowsApps Python (Not ideal, but functional): $($py.Source)" -ForegroundColor Yellow
+        }
+    } catch {}
+}
+
+# D. Install if absolutely missing
 if (-not $IsInstalled) {
     Write-Warning "[-] Valid Python not found. Initiating automatic installation..."
     try {
