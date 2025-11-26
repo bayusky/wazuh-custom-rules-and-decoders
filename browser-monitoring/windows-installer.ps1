@@ -9,6 +9,7 @@
     2. Creates installation directory C:\BrowserMonitor.
     3. Downloads browser-history-monitor.py from the specific GitHub URL.
     4. Creates a Windows Scheduled Task that runs at logon (HIDDEN).
+    5. Starts the task immediately.
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File .\windows-installer.ps1
@@ -167,4 +168,14 @@ $TaskSettings = New-ScheduledTaskSettingsSet -Hidden -AllowStartIfOnBatteries -D
 Set-ScheduledTask -TaskName $TaskName -Settings $TaskSettings | Out-Null
 
 Write-Host "[+] Scheduled Task '$TaskName' created successfully (Background Mode)." -ForegroundColor Green
-Write-Host "[*] To test immediately, run: Start-ScheduledTask -TaskName '$TaskName'" -ForegroundColor Yellow
+
+# 5. Start the Task Immediately
+Write-Host "[*] Starting the task immediately..."
+try {
+    Start-ScheduledTask -TaskName $TaskName -ErrorAction Stop
+    Write-Host "[+] Task started successfully. Browser monitoring is now active." -ForegroundColor Green
+}
+catch {
+    Write-Warning "[-] Failed to start the task immediately. It will run automatically at next logon."
+    Write-Warning "[-] Error: $_"
+}
