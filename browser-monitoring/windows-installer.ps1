@@ -1,15 +1,17 @@
 <#
 .SYNOPSIS
-    Downloads the Browser History Monitor from GitHub and sets up a Scheduled Task.
+    Downloads the Browser History Monitor from GitHub and sets up a background Scheduled Task.
+    Checks for Python and installs it automatically if missing.
     Run this as Administrator.
 
 .DESCRIPTION
-    1. Creates installation directory C:\BrowserMonitor
-    2. Downloads browser-history-monitor.py from the specific GitHub URL.
-    3. Creates a Windows Scheduled Task that runs at logon.
+    1. Checks if Python is installed; if not, downloads and installs Python 3.12 silently.
+    2. Creates installation directory C:\BrowserMonitor.
+    3. Downloads browser-history-monitor.py from the specific GitHub URL.
+    4. Creates a Windows Scheduled Task that runs at logon (HIDDEN).
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File .\install_browser_monitor.ps1
+    powershell -ExecutionPolicy Bypass -File .\windows-installer.ps1
 #>
 
 # --- CONFIGURATION ---
@@ -19,10 +21,14 @@ $ScriptFileName = "browser-history-monitor.py"
 $TaskName = "BrowserHistoryMonitor"
 $DestPath = Join-Path -Path $InstallDir -ChildPath $ScriptFileName
 
+# Python Installer Config
+$PythonInstallerUrl = "https://www.python.org/ftp/python/3.12.0/python-3.12.0-amd64.exe"
+$PythonInstallerPath = "$env:TEMP\python-installer.exe"
+
 # --- CHECK FOR ADMIN ---
 $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Warning "[-] This script must be run as Administrator to create the Scheduled Task."
+    Write-Warning "[-] This script must be run as Administrator to create the Scheduled Task and Install Python."
     Write-Warning "[-] Please right-click and 'Run as Administrator'."
     exit 1
 }
@@ -30,14 +36,59 @@ if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Adm
 # --- INSTALLATION ---
 Write-Host "[*] Starting Installation..." -ForegroundColor Cyan
 
-# 1. Create Directory
+# 1. Check and Install Python
+Write-Host "[*] Checking for Python installation..."
+try {
+    # Check if python is already in PATH
+    $null = Get-Command python.exe -ErrorAction Stop
+    Write-Host "[+] Python is already installed." -ForegroundColor Green
+}
+catch {
+    Write-Warning "[-] Python not found. Initiating automatic installation..."
+    
+    try {
+        # Download Python
+        Write-Host "[*] Downloading Python 3.12 from $PythonInstallerUrl..."
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $PythonInstallerUrl -OutFile $PythonInstallerPath -UseBasicParsing
+        
+        # Install Python Silently
+        # /quiet = No UI
+        # InstallAllUsers=1 = Install to Program Files
+        # PrependPath=1 = Add to Environment PATH (Critical)
+        Write-Host "[*] Installing Python (this may take a minute)..."
+        $Process = Start-Process -FilePath $PythonInstallerPath -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 Include_test=0" -Wait -PassThru
+        
+        if ($Process.ExitCode -eq 0) {
+            Write-Host "[+] Python installed successfully." -ForegroundColor Green
+            
+            # Refresh Environment Variables for the current session so we can use python immediately
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        }
+        else {
+            Write-Error "[-] Python installation failed with exit code $($Process.ExitCode)."
+            exit 1
+        }
+    }
+    catch {
+        Write-Error "[-] Failed to download or install Python. Please install manually."
+        Write-Error "[-] Error: $_"
+        exit 1
+    }
+    finally {
+        # Cleanup Installer
+        if (Test-Path $PythonInstallerPath) { Remove-Item $PythonInstallerPath -Force }
+    }
+}
+
+# 2. Create Directory
 if (-not (Test-Path -Path $InstallDir)) {
     New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
     Write-Host "[+] Created directory: $InstallDir" -ForegroundColor Green
 }
 
-# 2. Download Script
-Write-Host "[*] Downloading script from GitHub..."
+# 3. Download Script
+Write-Host "[*] Downloading monitor script from GitHub..."
 try {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Invoke-WebRequest -Uri $SourceUrl -OutFile $DestPath -UseBasicParsing
@@ -49,19 +100,41 @@ catch {
     exit 1
 }
 
-# 3. Create Scheduled Task
+# 4. Create Scheduled Task
 Write-Host "[*] Creating Scheduled Task..."
 
-# We verify Python exists
+# Find pythonw.exe (Windowless) now that Python is confirmed installed
 try {
-    $pythonPath = (Get-Command python.exe -ErrorAction Stop).Source
+    $pythonPath = (Get-Command pythonw.exe -ErrorAction Stop).Source
+    Write-Host "[+] Found pythonw.exe at: $pythonPath" -ForegroundColor Green
 } catch {
-    Write-Warning "[-] Python not found in PATH. Please ensure Python is installed and added to PATH."
-    Write-Warning "[-] Task creation will proceed, but execution may fail if python is not found later."
-    $pythonPath = "python.exe"
+    Write-Warning "[-] pythonw.exe not found in PATH immediately after install."
+    Write-Warning "[-] Attempting to locate in standard install paths..."
+    
+    # Fallback search in standard locations if PATH refresh didn't catch it
+    $StandardPaths = @(
+        "C:\Program Files\Python312\pythonw.exe",
+        "C:\Program Files\Python311\pythonw.exe",
+        "$env:LOCALAPPDATA\Programs\Python\Python312\pythonw.exe"
+    )
+    
+    $Found = $false
+    foreach ($Path in $StandardPaths) {
+        if (Test-Path $Path) {
+            $pythonPath = $Path
+            $Found = $true
+            Write-Host "[+] Found pythonw.exe manually at: $pythonPath" -ForegroundColor Green
+            break
+        }
+    }
+    
+    if (-not $Found) {
+        Write-Warning "[-] Could not locate pythonw.exe. Defaulting to 'pythonw.exe' (Task may fail if not in PATH)."
+        $pythonPath = "pythonw.exe"
+    }
 }
 
-# Action: Run Python with the script hidden
+# Action: Run Python Windowless with the script
 $Action = New-ScheduledTaskAction -Execute $pythonPath `
     -Argument """$DestPath""" `
     -WorkingDirectory $InstallDir
@@ -70,12 +143,16 @@ $Action = New-ScheduledTaskAction -Execute $pythonPath `
 $Trigger = New-ScheduledTaskTrigger -AtLogon
 
 # Principal: Run as the current logged-in user
-# This is crucial so the script finds the correct 'Home' directory for browser history
 $Principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive
 
 # Register the task
 Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
+
 Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Principal $Principal -Description "Runs the Browser History Monitor for Wazuh integration." | Out-Null
 
-Write-Host "[+] Scheduled Task '$TaskName' created successfully." -ForegroundColor Green
+# Configure the Task Settings to be Hidden
+$TaskSettings = New-ScheduledTaskSettingsSet -Hidden -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
+Set-ScheduledTask -TaskName $TaskName -Settings $TaskSettings | Out-Null
+
+Write-Host "[+] Scheduled Task '$TaskName' created successfully (Background Mode)." -ForegroundColor Green
 Write-Host "[*] To test immediately, run: Start-ScheduledTask -TaskName '$TaskName'" -ForegroundColor Yellow
