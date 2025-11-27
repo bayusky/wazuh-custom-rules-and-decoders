@@ -176,6 +176,13 @@ EOF
     
     echo -e "${GREEN}[+] LaunchAgent loaded and started.${NC}"
 
+    # IMPORTANT WARNING FOR SAFARI
+    echo -e "${YELLOW}[!] IMPORTANT: SAFARI MONITORING REQUIRES PERMISSIONS${NC}"
+    echo -e "${YELLOW}    To monitor Safari, you must grant 'Full Disk Access' to:${NC}"
+    echo -e "${YELLOW}    1. The Python executable: $(which python3)${NC}"
+    echo -e "${YELLOW}    2. Or the Terminal application.${NC}"
+    echo -e "${YELLOW}    Go to System Settings > Privacy & Security > Full Disk Access.${NC}"
+
 else
     echo -e "${RED}[-] Unsupported Operating System for automatic persistence.${NC}"
     echo "    Script downloaded to $DEST_PATH. Please run manually."
