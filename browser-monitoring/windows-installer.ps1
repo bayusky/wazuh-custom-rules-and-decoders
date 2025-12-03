@@ -166,9 +166,8 @@ Write-Host "[+] Using pythonw: $PythonWExecutable" -ForegroundColor Green
 $Action = New-ScheduledTaskAction -Execute $PythonWExecutable -Argument """$DestPath""" -WorkingDirectory $InstallDir
 $Trigger = New-ScheduledTaskTrigger -AtLogon
 
-# CRITICAL FIX: Use GroupId "BUILTIN\Users" instead of specific UserId
-# This creates a task that applies to the group "Users", meaning ANY user who logs in.
-$Principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Users" -RunLevel LeastPrivilege
+# FIXED: Changed 'LeastPrivilege' to 'Limited' to satisfy strict Enum typing
+$Principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Users" -RunLevel Limited
 
 Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
 
