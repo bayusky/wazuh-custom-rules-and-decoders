@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     Downloads the Browser History Monitor and sets up persistence for ALL USERS.
-    Checks for Python and installs it automatically if missing.
+    Forces System-Wide Python Installation.
     Run this as Administrator.
 #>
 
@@ -23,55 +23,79 @@ if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Adm
     exit 1
 }
 
-# --- 1. PYTHON DETECTION (FIND ABSOLUTE PATH) ---
-Write-Host "[*] Checking for Python installation..." -ForegroundColor Cyan
-$PythonExePath = ""
-$PythonWExePath = ""
+# --- 1. PYTHON DETECTION (MUST BE SYSTEM-WIDE) ---
+Write-Host "[*] Checking for System-Wide Python (Accessible by User1)..." -ForegroundColor Cyan
+$SystemPythonPath = ""
 
-# Check Common "All Users" Paths First
+# Check Common "Program Files" Paths
 $CommonPaths = @(
     "C:\Program Files\Python312\python.exe",
     "C:\Program Files\Python311\python.exe",
-    "C:\Program Files (x86)\Python312\python.exe"
+    "C:\Program Files (x86)\Python312\python.exe",
+    "C:\Python312\python.exe"
 )
 
 foreach ($path in $CommonPaths) {
     if (Test-Path $path) {
-        $PythonExePath = $path
+        $SystemPythonPath = $path
         Write-Host "[+] Found System Python: $path" -ForegroundColor Green
         break
     }
 }
 
-# If not found, check PATH
-if (-not $PythonExePath) {
+# If not found in Program Files, check PATH but FILTER OUT User-specific installs
+if (-not $SystemPythonPath) {
     try {
         $py = Get-Command python.exe -ErrorAction SilentlyContinue
-        if ($py) { $PythonExePath = $py.Source }
+        if ($py) {
+            if ($py.Source -like "*\Users\*") {
+                Write-Warning "[-] Found Python at $($py.Source)"
+                Write-Warning "[-] BUT this is a User-Specific install (AppData). User1 cannot access this."
+                Write-Warning "[-] We must install a System-Wide Python."
+            } else {
+                $SystemPythonPath = $py.Source
+            }
+        }
     } catch {}
 }
 
-# If STILL not found, Install it
-if (-not $PythonExePath) {
-    Write-Warning "[-] Python not found. Installing for ALL USERS..."
+# If STILL not found (or only found user-specific), Install it
+if (-not $SystemPythonPath) {
+    Write-Host "[*] Installing Python 3.12 System-Wide (This may take 2-3 minutes)..." -ForegroundColor Cyan
+    
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Invoke-WebRequest -Uri $PythonInstallerUrl -OutFile $PythonInstallerPath -UseBasicParsing
-    Start-Process -FilePath $PythonInstallerPath -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 Include_test=0" -Wait
     
-    # Assume default install path after silent install
-    $PythonExePath = "C:\Program Files\Python312\python.exe"
+    # Arguments explained:
+    # /quiet = Silent
+    # InstallAllUsers=1 = Installs to Program Files (Critical for User1 access)
+    # PrependPath=1 = Adds to PATH
+    # TargetDir = Force a clean path
+    $InstallArgs = "/quiet InstallAllUsers=1 PrependPath=1 Include_test=0 TargetDir=`"C:\Program Files\Python312`""
+    
+    Start-Process -FilePath $PythonInstallerPath -ArgumentList $InstallArgs -Wait
+    
+    # Verify Install
+    if (Test-Path "C:\Program Files\Python312\python.exe") {
+        $SystemPythonPath = "C:\Program Files\Python312\python.exe"
+        Write-Host "[+] Python installed successfully to $SystemPythonPath" -ForegroundColor Green
+    } else {
+        Write-Error "[-] Failed to install Python. Please install Python 3.12 manually and check 'Install for All Users'."
+        exit 1
+    }
 }
 
-# Find pythonw.exe (Windowless version) based on python.exe location
-$Dir = Split-Path $PythonExePath -Parent
+# Find pythonw.exe (Windowless version) relative to the System Python
+$Dir = Split-Path $SystemPythonPath -Parent
 $PythonWExePath = Join-Path $Dir "pythonw.exe"
 
 if (-not (Test-Path $PythonWExePath)) {
-    Write-Warning "[-] Could not find pythonw.exe at $PythonWExePath. using python.exe (window might appear)"
-    $PythonWExePath = $PythonExePath
+    Write-Warning "[-] Could not find pythonw.exe at $PythonWExePath. using python.exe"
+    # Fallback to python.exe (will show window) only if absolutely necessary
+    $PythonWExePath = $SystemPythonPath
+} else {
+    Write-Host "[+] Found Windowless Python: $PythonWExePath" -ForegroundColor Green
 }
-
-Write-Host "[+] Python Executable to use: $PythonWExePath" -ForegroundColor Green
 
 # --- 2. SETUP DIRECTORY ---
 if (-not (Test-Path -Path $InstallDir)) {
@@ -90,18 +114,12 @@ Write-Host "[+] Granted 'Modify' permissions to Users on $InstallDir" -Foregroun
 Invoke-WebRequest -Uri $SourceUrl -OutFile $DestPath -UseBasicParsing
 Write-Host "[+] Script downloaded." -ForegroundColor Green
 
-# --- 4. PERSISTENCE METHOD 1: SCHEDULED TASK ---
-# We use a batch wrapper to ensure paths are correct
-$BatchContent = @"
-@echo off
-cd /d "$InstallDir"
-"$PythonWExePath" "$DestPath"
-"@
-$BatchPath = Join-Path $InstallDir "launcher.bat"
-Set-Content -Path $BatchPath -Value $BatchContent
+# --- 4. PERSISTENCE: SCHEDULED TASK ---
+# FIX: Removed batch file wrapper. Execute pythonw directly to avoid CMD window.
 
 Write-Host "[*] Creating Scheduled Task..."
-$Action = New-ScheduledTaskAction -Execute $BatchPath
+# Note: Arguments must be quoted properly to handle spaces
+$Action = New-ScheduledTaskAction -Execute $PythonWExePath -Argument """$DestPath""" -WorkingDirectory $InstallDir
 $Trigger = New-ScheduledTaskTrigger -AtLogon
 $Principal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Users" -RunLevel Limited
 
@@ -111,9 +129,8 @@ $TaskSettings = New-ScheduledTaskSettingsSet -Hidden -AllowStartIfOnBatteries -D
 Set-ScheduledTask -TaskName $TaskName -Settings $TaskSettings | Out-Null
 Write-Host "[+] Scheduled Task Created." -ForegroundColor Green
 
-# --- 5. PERSISTENCE METHOD 2: STARTUP FOLDER (BACKUP) ---
-# This is often more reliable for "All Users" than Task Scheduler
-Write-Host "[*] Creating Global Startup Shortcut (Backup method)..."
+# --- 5. PERSISTENCE: STARTUP FOLDER (FAILSAFE) ---
+Write-Host "[*] Creating Global Startup Shortcut..."
 $StartupDir = "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp"
 $ShortcutPath = Join-Path $StartupDir "WazuhBrowserMonitor.lnk"
 $WScriptShell = New-Object -ComObject WScript.Shell
@@ -124,5 +141,7 @@ $Shortcut.WorkingDirectory = $InstallDir
 $Shortcut.Save()
 Write-Host "[+] Shortcut created in All Users Startup folder." -ForegroundColor Green
 
+# Cleanup old batch file if it exists from previous attempts
+if (Test-Path "$InstallDir\launcher.bat") { Remove-Item "$InstallDir\launcher.bat" -Force }
+
 Write-Host "`n[SUCCESS] Installation Complete." -ForegroundColor Green
-Write-Host "The monitor will run automatically when ANY user logs in."
